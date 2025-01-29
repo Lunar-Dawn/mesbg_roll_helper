@@ -16,12 +16,13 @@ const images = [
 ]
 
 defineProps<{
-	dice: [number, number]
+	dice: [number, number],
+	correct: boolean,
 }>()
 </script>
 
 <template>
-<div class="dice">
+<div class="dice" :class="{ 'correct': correct }">
 	<img class="dice-img" :src="images[dice[0] - 1]"/>
 	<img class="dice-img" :src="images[dice[1] - 1]"/>
 	<div class="sum">
@@ -35,7 +36,7 @@ defineProps<{
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 
-	background: green;
+	background: darkred;
 	padding: 10px;
 	border-radius: 5px;
 
@@ -54,5 +55,9 @@ defineProps<{
 		text-align: center;
 		font-weight: bold;
 	}
+}
+
+.correct {
+	background: green;
 }
 </style>

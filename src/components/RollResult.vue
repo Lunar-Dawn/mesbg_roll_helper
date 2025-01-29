@@ -5,6 +5,7 @@ import RollDisplay from "./RollDisplay.vue";
 const props = defineProps<{
 	progression: [number, number][],
 	done: boolean,
+	display: boolean,
 }>()
 
 const last = computed(() => props.progression[props.progression.length - 1])
@@ -13,21 +14,18 @@ const last = computed(() => props.progression[props.progression.length - 1])
 <template>
 <div class="wrapper">
 	<h1>
-		<template v-if="done">
-			{{ last[0] + last[1] }}
-		</template>
-		<template v-else>
-			Rolling...
+		<template v-if="display">
+			<template v-if="done">
+				{{ last[0] + last[1] }}
+			</template>
+			<template v-else>
+				Rolling...
+			</template>
 		</template>
 	</h1>
 	<div class="dice-wrapper">
-		<RollDisplay v-for="(dice, index) in progression.slice().reverse()" :key="index" :dice="dice"/>
+		<RollDisplay v-if="display" v-for="(dice, index) in progression.slice().reverse()" :correct="index === 0 && done" :dice="dice" :key="index"/>
 	</div>
-	<!--<ul>
-		<li v-for="(dice, index) in progression.slice().reverse()" :key="index" :class="{ 'complete-result': index === 0 && done }">
-			{{ dice[0] }} + {{ dice[1] }} = {{ dice[0] + dice[1] }}
-		</li>
-	</ul>-->
 </div>
 </template>
 

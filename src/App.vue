@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RollOption from "./components/RollOption.vue"
-import { ref } from "vue"
+import {computed, ref} from "vue"
 import RollResult from "./components/RollResult.vue"
 import type { Result } from "./result.ts"
 
@@ -8,7 +8,7 @@ const results = ref<Record<number, Result>>({})
 for (let i = 0; i < 11; i++) {
 	results.value[i + 2] = {
 		index: i + 2,
-		active: true,
+		active: false,
 		used: false,
 	}
 }
@@ -20,6 +20,8 @@ const found1 = ref(false)
 const tries1 = ref<[number, number][]>([])
 const found2 = ref(false)
 const tries2 = ref<[number, number][]>([])
+
+const num_enabled = computed(() => Object.values(results.value).filter(r => r.active).length)
 
 const dice = (): [number, number] => {
 	return [(Math.floor(Math.random() * 6) + 1), (Math.floor(Math.random() * 6) + 1)]
@@ -45,9 +47,7 @@ const tryFindValues = () => {
 }
 
 const startRoll = () => {
-	const num_enabled = Object.values(results.value).filter(r => r.active).length
-
-	if(num_enabled < 2 || rolling.value)
+	if(num_enabled.value < 2 || rolling.value)
 		return
 
 	rolling.value = true
@@ -85,18 +85,18 @@ const startRoll = () => {
 		<RollOption v-for="(res, i) in results" v-model="results[i]" :key="res.index"/>
 	</div>
 	<div class="button-wrapper">
-		<button @click="startRoll">Roll</button>
+		<button @click="startRoll" v-if="num_enabled >= 2">
+			{{ rolling ? 'Rolling...' : 'Roll' }}
+		</button>
+		<span v-else>Please select at least 2 options</span>
 	</div>
-	<template v-if="rolling || found1 || found2">
-		<RollResult :progression="tries1" :done="found1"/>
-		<RollResult :progression="tries2" :done="found2"/>
-	</template>
+	<RollResult :progression="tries1" :done="found1" :display="rolling || found1 || found2"/>
+	<RollResult :progression="tries2" :done="found2" :display="rolling || found1 || found2"/>
 </main>
 </template>
 
 <style scoped lang="scss">
 .body-wrapper {
-	width: 30em;
 	max-width: 100vw;
 
 	display: grid;
@@ -111,7 +111,8 @@ h1 {
 .selector-table {
 	grid-column: 1/-1;
 	display: grid;
-	grid-template-columns: auto;
+	grid-template-columns: repeat(11, 1fr);
+	grid-template-rows: repeat(7, 1fr);
 
 	align-items: stretch;
 }
@@ -119,11 +120,18 @@ h1 {
 	grid-column: 1/-1;
 
 	display: flex;
-	justify-content: stretch;
+
+	height: var(--row-height);
+
+	span {
+		align-self: center;
+
+		width: 100%;
+		text-align: center;
+	}
 
 	button {
 		width: 100%;
-		height: var(--row-height);
 
 		font-size: 1em;
 
